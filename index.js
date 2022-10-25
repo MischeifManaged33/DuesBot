@@ -1,52 +1,45 @@
 //https://discordapp.com/api/oauth2/authorize?client_id=1034366705620746281&permissions=8&scope=bot
 
-const { REST, Routes } = require('discord.js');
+const {Discord, GatewayIntentBits, Client}  = require('discord.js');
+const fs = require('fs');
 require('dotenv').config();
 
-const commands = [
-  {
-    name: 'ping',
-    description: 'Replies with Pong!',
-  },
+const TOKEN = process.env.DISCORD_TOKEN;
 
-  {
-    name: 'due',
-    description: 'When given a user, it pings every week a due is not paid'
-  },
-
-  {
-    name: 'pay',
-    description: 'When given a message link, if you are the person pinged your due will be marked as paid'
-  }
-];
-
-const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
-
-(async () => {
-  try {
-    console.log('Started refreshing application (/) commands.');
-
-    await rest.put(Routes.applicationCommands('1034366705620746281'), { body: commands });
-
-    console.log('Successfully reloaded application (/) commands.');
-  } catch (error) {
-    console.error(error);
-  }
-})();
-
-const { Client, GatewayIntentBits } = require('discord.js');
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.MessageContent,
+		GatewayIntentBits.GuildMembers,
+    ]
 });
 
-client.on('interactionCreate', async interaction => {
-  if (!interaction.isChatInputCommand()) return;
-
-  if (interaction.commandName === 'ping') {
-    await interaction.reply('Pong!');
-  }
+client.on("ready", () =>{
+    console.log(`Logged in as ${client.user.tag}`);
 });
 
-client.login(process.env.DISCORD_TOKEN);
+client.on("messageCreate", (message) => {
+    const msg = message.toString().split(" ");
+
+    if(message.content === "ping"){
+        message.reply("pong");
+    }
+
+    if(msg[0] === '!due'){
+        var person = message.mentions.users.first().id;
+        message.channel.send(`Hey, <@${person}>`);
+
+        const newb = {
+            "id": person,
+            "amount": 0,
+            "time": 0
+        }
+
+        const data = JSON.stringify(newb);
+
+        fs.appendFile("./dues.json", data, function(err){});
+    }
+});
+
+client.login(TOKEN);
