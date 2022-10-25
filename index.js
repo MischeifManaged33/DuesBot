@@ -34,6 +34,37 @@ client.on("messageCreate", (message) => {
         message.reply("pong");
     }
 
+    if(msg[0] === "!pay"){
+        
+    }
+
+    if(msg[0] === '!shame'){
+
+        if(message.mentions.users.size === 0){
+        dues.find({}, function(err, docs){
+            if(err){
+                message.channel.send('you have no overdue funds!! (or emma made an error)');
+            }else{
+                for(i = 0; i < docs.length; i++){
+                    message.channel.send(`<@${String(docs[i].id)}> you owe $${String(docs[i].amount)} to <@${String(docs[i].owner)}> pay up`);
+                }
+            }
+        })
+    }else{    
+        var person = message.mentions.users.first().id;    
+        dues.find({id: person}, function (err, docs) {
+            if(err){
+                message.channel.send('you have no overdue funds!! (or emma made an error)');
+            }else{
+                for(i = 0; i < docs.length; i++){
+                    message.channel.send(`<@${String(docs[i].id)}> you owe $${String(docs[i].amount)} to <@${String(docs[i].owner)}> pay up`);
+                }
+            }
+        });
+    }
+        
+    }
+
     if(msg[0] === '!due'){
         var person = message.mentions.users.first().id;
         message.channel.send(`Noted :eyes:`);
@@ -49,7 +80,8 @@ client.on("messageCreate", (message) => {
         const due = new dues ({
             id: person,
             amount: parseInt(msg[2]),
-            date: week.toString()
+            date: week.toString(),
+            owner: message.author.id
         })
 
         waitSave(due);
