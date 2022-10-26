@@ -27,6 +27,9 @@ client.on("ready", () =>{
     console.log(`Logged in as ${client.user.tag}`);
 });
 
+client.user.setStatus("idle");
+client.user.setActivity("PAY YOUR FUCKIN MONEY");
+
 client.on("messageCreate", (message) => {
     const msg = message.toString().split(" ");
 
