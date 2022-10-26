@@ -34,8 +34,22 @@ client.on("messageCreate", (message) => {
         message.reply("pong");
     }
 
+    if(msg[0] === "!help"){
+        message.channel.send("Commands:\n!due - @<user in debt> <amount to be paid (int)> - This is used to assign debt to others\n!shame - (optional)@<user to be shamed> - This is used to shame those who are poor and in debt\n!pay - @<person to be paid> <amount paid> - This is to finally pay of the debt and become free. Amount paid has to be in increments specified when shamed");
+    }
+
     if(msg[0] === "!pay"){
-        
+        var owner = message.mentions.users.first();
+        var id = message.author.id;
+        var amount = msg[2];
+
+        const res = dues.deleteOne({id: id, amount: amount, owner: owner}, function (err){
+            if(err){
+                message.channel.send("sorry, something went wrong");
+            }
+        });
+
+        message.channel.send("Debt paid :pensive:");
     }
 
     if(msg[0] === '!shame'){
@@ -44,6 +58,8 @@ client.on("messageCreate", (message) => {
         dues.find({}, function(err, docs){
             if(err){
                 message.channel.send('you have no overdue funds!! (or emma made an error)');
+            }else if(docs.length <= 0){
+                message.channel.send("There are no outstanding debts :angry:");
             }else{
                 for(i = 0; i < docs.length; i++){
                     message.channel.send(`<@${String(docs[i].id)}> you owe $${String(docs[i].amount)} to <@${String(docs[i].owner)}> pay up`);
@@ -55,6 +71,8 @@ client.on("messageCreate", (message) => {
         dues.find({id: person}, function (err, docs) {
             if(err){
                 message.channel.send('you have no overdue funds!! (or emma made an error)');
+            }else if (docs.length <= 0){
+                message.channel.send("You have no outstanding debts :angry:");
             }else{
                 for(i = 0; i < docs.length; i++){
                     message.channel.send(`<@${String(docs[i].id)}> you owe $${String(docs[i].amount)} to <@${String(docs[i].owner)}> pay up`);
@@ -67,24 +85,26 @@ client.on("messageCreate", (message) => {
 
     if(msg[0] === '!due'){
         var person = message.mentions.users.first().id;
-        message.channel.send(`Noted :eyes:`);
         var today = new Date();
-        Date.prototype.addDays = function(days) {
-            var date = new Date(this.valueOf());
-            date.setDate(date.getDate() + days);
-            return date;
+
+        if(msg.length >= 3){
+           if(isNaN(parseInt(msg[2]))){
+            message.channel.send("Make sure your amount is a number");
+           }else{
+            const due = new dues ({
+                id: person,
+                amount: parseInt(msg[2]),
+                date: today.toString(),
+                owner: message.author.id
+            })
+    
+            waitSave(due);
+
+            message.channel.send(`Noted :eyes:`);
+           }
+        }else{
+            message.channel.send("There are not enough spaces for all parameters to have been met");
         }
-
-        week = today.addDays(7);
-
-        const due = new dues ({
-            id: person,
-            amount: parseInt(msg[2]),
-            date: week.toString(),
-            owner: message.author.id
-        })
-
-        waitSave(due);
     }
 });
 
