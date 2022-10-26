@@ -1,10 +1,11 @@
 //https://discordapp.com/api/oauth2/authorize?client_id=1034366705620746281&permissions=8&scope=bot
 
-const {Discord, GatewayIntentBits, Client}  = require('discord.js');
+const {Discord, GatewayIntentBits, Client, ActivityType, Guild, GuildChannel}  = require('discord.js');
 const fs = require('fs');
 require('dotenv').config();
 const mongoose = require('mongoose');
 const dues = require('./models/dues.js');
+const schedule = require('node-schedule');
 
 async function main(){
     await mongoose.connect(process.env.MONGO_DB);
@@ -23,12 +24,17 @@ const client = new Client({
     ]
 });
 
+function scheduleMessage(channel){
+    const date = new Date(new Date().getTime() + 86,400,000);
+    schedule.scheduleJob(date, () => {
+        channel.send("!shame");
+    })
+}
+
 client.on("ready", () =>{
     console.log(`Logged in as ${client.user.tag}`);
+    client.user.setActivity("PAY YOUR DUES");
 });
-
-client.user.setStatus("idle");
-client.user.setActivity("PAY YOUR FUCKIN MONEY");
 
 client.on("messageCreate", (message) => {
     const msg = message.toString().split(" ");
@@ -83,7 +89,19 @@ client.on("messageCreate", (message) => {
             }
         });
     }
-        
+
+    if(message.author.id == client.user.id){
+        scheduleMessage(message.channel);
+    }
+
+    }
+
+    if(msg[0] === '!parrot'){
+        var p = "";
+        for(i = 1; i < msg.length; i++){
+            p = p + msg[i];
+        }
+        message.channel.send(p);
     }
 
     if(msg[0] === '!due'){
