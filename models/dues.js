@@ -4,7 +4,8 @@ const dueSchema = mongoose.Schema({
     id: String,
     amount: Number,
     date: String,
-    owner: Number
+    owner: String,
+    message: String
 })
 
 module.exports = mongoose.model("dues", dueSchema);
