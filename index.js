@@ -55,17 +55,17 @@ client.on("messageCreate", async (message) => {
     }
 
     if(msg[0] === "!pay"){
-        var owner = message.mentions.users.first();
+        var owner = message.mentions.users.first().id;
         var id = message.author.id;
         var amount = msg[2];
 
         const res = await dues.deleteOne({id: id, amount: amount, owner: owner});
 
-        if(res <= 0){
+        if(res.deletedCount <= 0){
             message.channel.send("Sorry, something went wrong.")
+        }else{
+            message.channel.send("Debt paid :pensive:");
         }
-
-        message.channel.send("Debt paid :pensive:");
     }
 
     if(msg[0] === '!shame'){
